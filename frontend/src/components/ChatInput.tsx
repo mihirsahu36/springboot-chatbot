@@ -1,62 +1,46 @@
 import { useState } from "react";
+import { FiSend } from "react-icons/fi";
 
 interface Props {
-  onSend: (message: string) => void;
+  onSend: (prompt: string) => void;
 }
 
-function ChatInput({ onSend }: Props) {
-  const [input, setInput] = useState("");
+export default function ChatInput({
+  onSend,
+}: Props) {
+  const [prompt, setPrompt] =
+    useState("");
 
   const handleSend = () => {
-    if (!input.trim()) return;
+    if (!prompt.trim()) return;
 
-    onSend(input);
-    setInput("");
-  };
+    onSend(prompt);
 
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (e.key === "Enter") {
-      handleSend();
-    }
+    setPrompt("");
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: "10px",
-      }}
-    >
+    <div className="chat-input">
       <input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="Ask me anything..."
-        style={{
-          flex: 1,
-          padding: "12px",
-          borderRadius: "10px",
-          border: "none",
+        value={prompt}
+        onChange={(e) =>
+          setPrompt(
+            e.target.value
+          )
+        }
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            handleSend();
+          }
         }}
+        placeholder="Message Spring AI..."
       />
 
       <button
         onClick={handleSend}
-        style={{
-          padding: "12px 20px",
-          borderRadius: "10px",
-          border: "none",
-          backgroundColor: "#2563eb",
-          color: "white",
-          cursor: "pointer",
-        }}
       >
-        Send
+        <FiSend />
       </button>
     </div>
   );
 }
-
-export default ChatInput;

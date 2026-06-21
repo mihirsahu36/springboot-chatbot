@@ -1,20 +1,25 @@
-# Spring Boot OpenAI Chatbot
+# Spring Boot Chatbot
 
 A full-stack AI chatbot application built using Spring Boot, React, TypeScript, and OpenAI APIs.
 
-## Architecture
+## 🏗️ Architecture
 
 ```text
-React Frontend
-       │
-       ▼
-Spring Boot REST API
-       │
-       ▼
-OpenAI API
+React + TypeScript Frontend
+            │
+            ▼
+     Spring Boot REST API
+            │
+            ▼
+        MySQL Database
+            │
+            ▼
+        OpenAI API
 ```
 
-## Project Structure
+---
+
+## 📁 Project Structure
 
 ```text
 springboot-chatbot
@@ -32,21 +37,102 @@ springboot-chatbot
 └── README.md
 ```
 
-## Features
+---
+
+## 🚀 Features
 
 ### Backend
+
 - Spring Boot REST API
 - OpenAI Integration
-- DTO-based Design
+- MySQL Database Integration
+- JPA/Hibernate Persistence
+- Conversation Management
+- Message Persistence
+- Rename Conversation API
+- Delete Conversation API
+- CORS Configuration
 - Maven Build System
 
 ### Frontend
+
 - React + TypeScript
-- Chat Interface
-- API Integration
+- Modern ChatGPT-style UI
+- Conversation Sidebar
+- Create New Chat
+- Rename Conversation
+- Delete Conversation
+- Conversation Search
+- Markdown Rendering
+- Syntax Highlighting
+- Copy Response Button
+- Typing Indicator
+- Loading State
+- Auto Scroll
+- Theme Toggle
 - Responsive Layout
 
-## Getting Started
+---
+
+## 🔗 Backend APIs
+
+### Create Conversation
+
+```http
+POST /api/conversations
+```
+
+### Get All Conversations
+
+```http
+GET /api/conversations
+```
+
+### Get Messages
+
+```http
+GET /api/conversations/{id}/messages
+```
+
+### Send Message
+
+```http
+POST /api/conversations/{id}/message
+```
+
+### Rename Conversation
+
+```http
+PUT /api/conversations/{id}
+```
+
+### Delete Conversation
+
+```http
+DELETE /api/conversations/{id}
+```
+
+---
+
+## 🗄️ Database
+
+Tables:
+
+```text
+conversations
+messages
+```
+
+Features:
+
+- Persistent Chat History
+- Conversation Storage
+- Message Storage
+- Automatic Schema Updates
+
+---
+
+## ⚙️ Getting Started
 
 ### Start Backend
 
@@ -60,6 +146,8 @@ Backend URL:
 ```text
 http://localhost:8081
 ```
+
+---
 
 ### Start Frontend
 
@@ -75,23 +163,52 @@ Frontend URL:
 http://localhost:5173
 ```
 
-## Current UI
+---
 
-- Dark-themed chatbot interface
-- Chat input and response area
-- Spring Boot backend integration
-- React + TypeScript frontend
+## 📌 Current Status
 
-## Future Roadmap
+### ✅ Completed
 
-- Chat History
-- Sidebar Navigation
-- Dark/Light Theme Toggle
+- Conversation Management
+- Message Persistence
+- MySQL Integration
+- Rename Conversation
+- Delete Conversation
+- Markdown Rendering
+- Syntax Highlighting
+- Theme Toggle
+- Auto Scroll
+- Loading Indicator
+- Typing Animation
+- Conversation Search
+- Responsive UI
+
+### 🚧 Planned
+
+- Auto Conversation Title Generation
+- Like / Dislike Persistence
+- Toast Notifications
 - Streaming Responses
-- Local Storage Persistence
+- JWT Authentication
+- Multi-user Support
 - Docker Deployment
 
-## Author
+---
 
-**Mihir Sahu**  
-Software Engineer
+## 🎨 Current UI
+
+- Modern ChatGPT-inspired Design
+- Glassmorphism Sidebar
+- Conversation History Panel
+- User and Assistant Avatars
+- Dark Theme Support
+- Responsive Layout
+- Markdown & Code Rendering
+
+---
+
+## 👨‍💻 Author
+
+**Mihir Sahu**
+
+Software Engineer | Spring Boot | React | TypeScript

@@ -1,10 +1,43 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 
-createRoot(document.getElementById('root')!).render(
+import App from "./App";
+import "./index.css";
+
+import { Toaster } from "react-hot-toast";
+
+createRoot(
+  document.getElementById("root")!
+).render(
   <StrictMode>
     <App />
-  </StrictMode>,
-)
+
+    <Toaster
+      position="top-right"
+      toastOptions={{
+        duration: 3000,
+
+        style: {
+          minWidth: "500px",
+          padding: "24px 32px",
+          fontSize: "20px",
+          fontWeight: "600",
+          borderRadius: "20px",
+        },
+        success: {
+          style: {
+            background: "#14532d",
+            color: "#fff",
+          },
+        },
+
+        error: {
+          style: {
+            background: "#7f1d1d",
+            color: "#fff",
+          },
+        },
+      }}
+    />
+  </StrictMode>
+);

@@ -2,16 +2,23 @@ import Avatar from "./Avatar";
 
 import type { Message } from "../types/Message";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import toast from "react-hot-toast";
 
 import {
   FiCopy,
   FiThumbsUp,
   FiThumbsDown
 } from "react-icons/fi";
+
+import {
+  AiFillLike,
+  AiFillDislike
+} from "react-icons/ai";
 
 interface Props {
   message: Message;
@@ -23,13 +30,49 @@ export default function Message({
 
   const isUser =
     message.role === "user";
+  
+  const [copied, setCopied] =
+    useState(false);
+
+  const [liked, setLiked] =
+    useState(false);
+
+  const [disliked, setDisliked] =
+    useState(false);
 
   const copyMessage = async () => {
-    await navigator.clipboard.writeText(
-      message.content
+    await navigator.clipboard
+      .writeText(
+        message.content
+      );
+
+    setCopied(true);
+
+    toast.success(
+      "Copied to clipboard"
     );
 
-    console.log("Copied");
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+  };
+
+  const handleLike = () => {
+    setLiked(true);
+    setDisliked(false);
+
+    toast.success(
+      "Marked as helpful"
+    );
+  };
+
+  const handleDislike = () => {
+    setDisliked(true);
+    setLiked(false);
+
+    toast.success(
+      "Feedback received"
+    );
   };
 
   return (
@@ -96,22 +139,36 @@ export default function Message({
         {!isUser && (
           <div className="message-actions">
             <button
+              className="action-btn"
               onClick={copyMessage}
-              className="action-btn"
             >
-              <FiCopy />
+              {copied ? "✓" : <FiCopy />}
             </button>
 
             <button
-              className="action-btn"
+              className={
+                liked
+                  ? "action-btn active"
+                  : "action-btn"
+              }
+              onClick={handleLike}
             >
-              <FiThumbsUp />
+              {liked
+                ? <AiFillLike />
+                : <FiThumbsUp />}
             </button>
 
             <button
-              className="action-btn"
+              className={
+                disliked
+                  ? "action-btn active"
+                  : "action-btn"
+              }
+              onClick={handleDislike}
             >
-              <FiThumbsDown />
+              {disliked
+                ? <AiFillDislike />
+                : <FiThumbsDown />}
             </button>
           </div>
         )}

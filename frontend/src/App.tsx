@@ -4,6 +4,7 @@ import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import ChatWindow from "./components/ChatWindow";
 import ChatInput from "./components/ChatInput";
+import toast from "react-hot-toast";
 
 import {
   getConversations,
@@ -12,6 +13,9 @@ import {
   sendMessage,
   deleteConversation,
   renameConversation,
+  uploadFile,
+  getFiles,
+  deleteFile,
 } from "./services/conversationApi";
 
 import type { Conversation } from "./types/Conversation";
@@ -34,6 +38,9 @@ function App() {
 
   const [messages, setMessages] =
     useState<Message[]>([]);
+  
+  const [files, setFiles] =
+    useState<any[]>([]);
 
   const [loading, setLoading] =
     useState(false);
@@ -43,10 +50,16 @@ function App() {
   }, []);
 
   useEffect(() => {
+    document.body.className =
+      darkMode
+        ? ""
+        : "light-mode";
+
     localStorage.setItem(
       "theme",
       darkMode ? "dark" : "light"
     );
+
   }, [darkMode]);
 
   function toggleTheme() {
@@ -62,12 +75,27 @@ function App() {
     }
   }
 
-  async function loadMessages(id: number) {
+  async function loadMessages(
+    id: number
+  ) {
     try {
-      const data = await getMessages(id);
+
+      const data =
+        await getMessages(id);
+
+      const uploadedFiles =
+        await getFiles(id);
 
       setMessages(data);
-      setSelectedConversation(id);
+
+      setFiles(
+        uploadedFiles
+      );
+
+      setSelectedConversation(
+        id
+      );
+
     } catch (error) {
       console.error(error);
     }
@@ -94,7 +122,9 @@ function App() {
     prompt: string
   ) {
     if (!selectedConversation) {
-      alert("Create a chat first");
+      toast.error(
+        "Create a chat first"
+      );
       return;
     }
 
@@ -131,22 +161,28 @@ function App() {
     }
 
     try {
-      console.log("Deleting", id);
-
       await deleteConversation(id);
 
-      console.log("Deleted successfully");
+      toast.success(
+        "Conversation deleted"
+      );
 
       await loadConversations();
 
       if (
         selectedConversation === id
       ) {
-        setSelectedConversation(null);
+        setSelectedConversation(
+          null
+        );
         setMessages([]);
       }
     } catch (error) {
       console.error(error);
+
+      toast.error(
+        "Failed to delete conversation"
+      );
     }
   }
 
@@ -172,9 +208,102 @@ function App() {
         newTitle
       );
 
+      toast.success(
+        "Conversation renamed"
+      );
+
       await loadConversations();
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  async function handleUpload(
+  file: File
+  ) {
+
+    console.log(
+      "selectedConversation =",
+      selectedConversation
+    );
+
+    console.log(
+      "uploaded file =",
+      file
+    );
+
+    if (!selectedConversation) {
+      alert(
+        "Select a conversation first"
+      );
+      return;
+    }
+
+    try {
+
+      await uploadFile(
+        selectedConversation,
+        file
+      );
+
+      const uploadedFiles =
+        await getFiles(
+          selectedConversation
+        );
+
+      setFiles(
+        uploadedFiles
+      );
+
+      toast.success(
+        "File uploaded"
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+      toast.error(
+        "Upload failed"
+      );
+    }
+  }
+
+  async function handleDeleteFile(
+    fileId: number
+  ) {
+
+    try {
+
+      await deleteFile(
+        fileId
+      );
+
+      if (
+        selectedConversation
+      ) {
+
+        const uploadedFiles =
+          await getFiles(
+            selectedConversation
+          );
+
+        setFiles(
+          uploadedFiles
+        );
+      }
+
+      toast.success(
+        "File removed"
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+      toast.error(
+        "Failed to remove file"
+      );
     }
   }
 
@@ -211,6 +340,34 @@ function App() {
           toggleTheme={toggleTheme}
         />
 
+        <div className="uploaded-files">
+          {files.map(file => (
+
+            <div
+              key={file.id}
+              className="file-chip"
+            >
+
+              <span>
+                📄 {file.fileName}
+              </span>
+
+              <button
+                className="file-delete-btn"
+                onClick={() =>
+                  handleDeleteFile(
+                    file.id
+                  )
+                }
+              >
+                ✕
+              </button>
+
+            </div>
+          ))}
+
+        </div>
+
         <ChatWindow
           messages={messages}
           loading={loading}
@@ -218,6 +375,7 @@ function App() {
 
         <ChatInput
           onSend={handleSend}
+          onUpload={handleUpload}
         />
       </div>
     </div>

@@ -86,4 +86,18 @@ public class ConversationController {
                 id,
                 request.title());
     }
+
+    @PostMapping("/messages/{id}/like")
+    public void likeMessage(
+            @PathVariable Long id) {
+
+        chatBotService.likeMessage(id);
+    }
+
+    @PostMapping("/messages/{id}/dislike")
+    public void dislikeMessage(
+            @PathVariable Long id) {
+
+        chatBotService.dislikeMessage(id);
+    }
 }

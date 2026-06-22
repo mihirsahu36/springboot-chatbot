@@ -9,6 +9,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name = "messages")
 public class Message {
 
+    private Boolean liked = false;
+
+    private Boolean disliked = false;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -59,5 +63,21 @@ public class Message {
 
     public void setConversation(Conversation conversation) {
         this.conversation = conversation;
+    }
+
+    public Boolean getLiked() {
+        return liked;
+    }
+
+    public void setLiked(Boolean liked) {
+        this.liked = liked;
+    }
+
+    public Boolean getDisliked() {
+        return disliked;
+    }
+
+    public void setDisliked(Boolean disliked) {
+        this.disliked = disliked;
     }
 }

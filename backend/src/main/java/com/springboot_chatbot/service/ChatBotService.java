@@ -195,10 +195,72 @@ public class ChatBotService {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+        e.printStackTrace();
 
-            return "Error calling OpenAI API : "
-                    + e.getMessage();
+        String friendlyMessage =
+                """
+        ⚠️ AI service is currently unavailable.
+
+        OpenAI API quota has been exceeded.
+
+        You can continue testing the application UI,
+        conversation history, rename, delete and
+        other features until API credits are added.
+        """;
+
+        Conversation conversation =
+                conversationRepository
+                        .findById(conversationId)
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "Conversation not found"));
+
+        Message assistantMessage =
+                new Message();
+
+        assistantMessage.setRole(
+                "assistant");
+
+        assistantMessage.setContent(
+                friendlyMessage);
+
+        assistantMessage.setConversation(
+                conversation);
+
+        messageRepository.save(
+                assistantMessage);
+
+        return friendlyMessage;
         }
     }
+
+    public void likeMessage(Long id)
+        {
+        Message message =
+                messageRepository
+                        .findById(id)
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "Message not found"));
+
+        message.setLiked(true);
+        message.setDisliked(false);
+
+        messageRepository.save(message);
+        }
+
+        public void dislikeMessage(Long id)
+        {
+        Message message =
+                messageRepository
+                        .findById(id)
+                        .orElseThrow(
+                                () -> new RuntimeException(
+                                        "Message not found"));
+
+        message.setLiked(false);
+        message.setDisliked(true);
+
+        messageRepository.save(message);
+        }
 }

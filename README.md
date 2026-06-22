@@ -185,13 +185,11 @@ http://localhost:5173
 
 ### 🚧 Planned
 
-- Auto Conversation Title Generation
-- Like / Dislike Persistence
-- Toast Notifications
+- File Content Context for AI Responses
+- PDF Text Extraction
 - Streaming Responses
-- JWT Authentication
-- Multi-user Support
-- Docker Deployment
+- Export Chat as PDF
+- Drag & Drop File Upload
 
 ---
 

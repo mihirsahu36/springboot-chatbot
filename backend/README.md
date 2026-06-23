@@ -1,291 +1,184 @@
-````md
-# Spring Boot Chatbot Backend
+# Spring Boot Chatbot
 
-A full-stack AI chatbot backend built with Spring Boot that powers a ChatGPT-style application with persistent conversations, JWT authentication, multi-user support, file uploads, and multiple AI providers (OpenAI & Gemini).
+A full-stack ChatGPT-style AI chatbot application built with **Spring Boot**, **React**, **TypeScript**, **MySQL**, **OpenAI**, and **Google Gemini** integration.
 
 ---
 
 ## 🚀 Tech Stack
 
-- Java 19+
-- Spring Boot
-- Spring Security
-- JWT Authentication
-- Spring Data JPA
-- MySQL
-- Maven
-- OpenAI API
-- Google Gemini API
+### Backend
+
+* Spring Boot
+* Spring Security
+* JWT Authentication
+* Spring Data JPA
+* MySQL
+* OpenAI API
+* Google Gemini API
+* Maven
+
+### Frontend
+
+* React
+* TypeScript
+* Vite
+* Framer Motion
+* React Markdown
+* React Syntax Highlighter
+* React Icons
+* React Hot Toast
+* Axios
 
 ---
 
 ## ✨ Features
 
-### 🔐 Authentication
+### 💬 Chat Features
 
-- User Registration
-- User Login
-- JWT Authentication
-- BCrypt Password Encryption
-- Protected REST APIs
+* Create New Chat
+* Persistent Chat History
+* Conversation Sidebar
+* Rename Conversation
+* Delete Conversation
+* Automatic Conversation Title Generation
+* Auto Scroll to Latest Message
+* Loading Indicator
+* Copy Response Button
+* Like / Dislike Messages
+* AI Provider Selection (OpenAI / Gemini)
 
-### 💬 Conversation Management
+### 📁 File Features
 
-- Create Conversation
-- Get User Conversations
-- Rename Conversation
-- Delete Conversation
-- Automatic Conversation Title Generation
+* Upload Files
+* Persist Uploaded Files in MySQL
+* View Uploaded Files per Conversation
+* Delete Uploaded Files
+* Uploaded Files Used as Chat Context
 
-### 📝 Message Management
+### 🔐 Authentication Features
 
-- Store User Messages
-- Store Assistant Responses
-- Retrieve Conversation History
-- Persistent Chat Storage
-- Like / Dislike Messages
+* User Registration
+* User Login
+* JWT Authentication
+* Secure APIs
+* Multi-user Support
+* User-specific Conversations
 
-### 🤖 AI Integration
+### 🎨 UI Features
 
-- OpenAI Integration
-- Gemini Integration
-- Provider Selection Support (`OpenAI` / `Gemini`)
-- Conversation Context Support
-- Graceful Fallback Responses
+* Modern ChatGPT-style Interface
+* Dark Mode
+* Light Mode Support
+* Responsive Layout
+* Glassmorphism Effects
+* Sidebar Search
+* User and Assistant Avatars
+* Toast Notifications
 
-### 📁 File Upload
+### 📝 Message Rendering
 
-- Upload Text Files
-- Persist Files in MySQL
-- Associate Files with Conversations
-- Retrieve Uploaded Files
-- Delete Uploaded Files
-- Uploaded Files Used as Chat Context
+* Markdown Support
+* Syntax Highlighting
+* Code Block Rendering
+* Inline Code Styling
 
-### 👥 Multi-user Support
+### 🗄️ Data Persistence
 
-- User-specific Conversations
-- User-specific Messages
-- User-specific Uploaded Files
-- Secure API Access
+* Conversations stored in MySQL
+* Messages stored in MySQL
+* Uploaded Files stored in MySQL
+* Conversation History Retrieval
 
 ---
 
 ## 📁 Project Structure
 
 ```text
-backend
+springboot-chatbot
 │
-├── src/main/java/com/springboot_chatbot
+├── backend
+│   ├── controller
+│   │   ├── AuthController.java
+│   │   ├── ConversationController.java
+│   │   └── FileUploadController.java
+│   │
+│   ├── service
+│   │   ├── AuthService.java
+│   │   ├── JwtService.java
+│   │   ├── ConversationService.java
+│   │   └── ChatBotService.java
+│   │
+│   ├── repository
+│   │   ├── UserRepository.java
+│   │   ├── ConversationRepository.java
+│   │   ├── MessageRepository.java
+│   │   └── UploadedFileRepository.java
+│   │
+│   ├── entity
+│   │   ├── User.java
+│   │   ├── Conversation.java
+│   │   ├── Message.java
+│   │   └── UploadedFile.java
+│   │
+│   └── dto
 │
-├── controller
-│   ├── AuthController.java
-│   ├── ConversationController.java
-│   └── FileUploadController.java
+├── frontend
+│   ├── components
+│   │   ├── Sidebar.tsx
+│   │   ├── Header.tsx
+│   │   ├── ChatWindow.tsx
+│   │   ├── ChatInput.tsx
+│   │   ├── Message.tsx
+│   │   ├── Avatar.tsx
+│   │   ├── ThemeToggle.tsx
+│   │   └── TypingIndicator.tsx
+│   │
+│   ├── pages
+│   │   └── LoginPage.tsx
+│   │
+│   ├── services
+│   │   ├── authApi.ts
+│   │   └── conversationApi.ts
+│   │
+│   ├── types
+│   │   ├── Auth.ts
+│   │   ├── Conversation.ts
+│   │   └── Message.ts
+│   │
+│   ├── App.tsx
+│   ├── App.css
+│   └── main.tsx
 │
-├── service
-│   ├── AuthService.java
-│   ├── JwtService.java
-│   ├── ConversationService.java
-│   └── ChatBotService.java
-│
-├── repository
-│   ├── UserRepository.java
-│   ├── ConversationRepository.java
-│   ├── MessageRepository.java
-│   └── UploadedFileRepository.java
-│
-├── entity
-│   ├── User.java
-│   ├── Conversation.java
-│   ├── Message.java
-│   └── UploadedFile.java
-│
-├── dto
-│   ├── LoginRequest.java
-│   ├── RegisterRequest.java
-│   ├── AuthResponse.java
-│   ├── PromptRequest.java
-│   ├── SendMessageRequest.java
-│   ├── RenameConversationRequest.java
-│   ├── ChatBotRequest.java
-│   ├── ChatBotResponse.java
-│   ├── GeminiRequest.java
-│   └── GeminiResponse.java
-│
-├── config
-│   ├── SecurityConfig.java
-│   ├── JwtAuthenticationFilter.java
-│   └── RestClientConfig.java
-│
-├── SpringbootChatbotApplication.java
-│
-└── src/main/resources
-    └── application.properties
-
-pom.xml
-````
+└── README.md
+```
 
 ---
 
-## 🗄️ Database Tables
+## 🔗 Backend APIs
 
-### users
-
-| Column   | Type    |
-| -------- | ------- |
-| id       | BIGINT  |
-| username | VARCHAR |
-| email    | VARCHAR |
-| password | VARCHAR |
-
-### conversations
-
-| Column     | Type      |
-| ---------- | --------- |
-| id         | BIGINT    |
-| title      | VARCHAR   |
-| created_at | TIMESTAMP |
-| user_id    | BIGINT    |
-
-### messages
-
-| Column          | Type      |
-| --------------- | --------- |
-| id              | BIGINT    |
-| role            | VARCHAR   |
-| content         | LONGTEXT  |
-| liked           | BOOLEAN   |
-| disliked        | BOOLEAN   |
-| timestamp       | TIMESTAMP |
-| conversation_id | BIGINT    |
-
-### uploaded_files
-
-| Column          | Type     |
-| --------------- | -------- |
-| id              | BIGINT   |
-| file_name       | VARCHAR  |
-| content         | LONGTEXT |
-| conversation_id | BIGINT   |
-
----
-
-## 🔐 Authentication APIs
-
-### Register User
+### Authentication APIs
 
 ```http
 POST /api/auth/register
-```
-
-Request:
-
-```json
-{
-  "username": "mihir",
-  "email": "mihir@test.com",
-  "password": "password123"
-}
-```
-
-### Login User
-
-```http
 POST /api/auth/login
 ```
 
-Request:
-
-```json
-{
-  "email": "mihir@test.com",
-  "password": "password123"
-}
-```
-
-Response:
-
-```json
-{
-  "token": "jwt_token",
-  "username": "mihir"
-}
-```
-
----
-
-## 💬 Conversation APIs
-
-### Create Conversation
+### Conversation APIs
 
 ```http
-POST /api/conversations
-```
-
-### Get User Conversations
-
-```http
-GET /api/conversations
-```
-
-### Get Conversation Messages
-
-```http
-GET /api/conversations/{id}/messages
-```
-
-### Send Message
-
-```http
-POST /api/conversations/{id}/message
-```
-
-Request:
-
-```json
-{
-  "prompt": "Explain Spring Boot",
-  "provider": "gemini"
-}
-```
-
-Supported providers:
-
-* `openai`
-* `gemini`
-
-### Rename Conversation
-
-```http
-PUT /api/conversations/{id}
-```
-
-### Delete Conversation
-
-```http
+POST   /api/conversations
+GET    /api/conversations
+GET    /api/conversations/{id}/messages
+POST   /api/conversations/{id}/message
+PUT    /api/conversations/{id}
 DELETE /api/conversations/{id}
 ```
 
----
-
-## 📁 File APIs
-
-### Upload File
+### File APIs
 
 ```http
-POST /api/files/upload/{conversationId}
-```
-
-### Get Uploaded Files
-
-```http
-GET /api/files/{conversationId}
-```
-
-### Delete File
-
-```http
+POST   /api/files/upload/{conversationId}
+GET    /api/files/{conversationId}
 DELETE /api/files/{fileId}
 ```
 
@@ -293,7 +186,7 @@ DELETE /api/files/{fileId}
 
 ## ⚙️ Configuration
 
-### application.properties
+### Backend `application.properties`
 
 ```properties
 server.port=8081
@@ -305,8 +198,8 @@ spring.datasource.password=YOUR_PASSWORD
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 
-openapi.api.model=gpt-4o-mini
 openai.api.key=${OPENAI_API_KEY}
+openapi.api.model=gpt-4o-mini
 
 gemini.api.key=${GEMINI_API_KEY}
 gemini.api.model=gemini-2.5-flash
@@ -317,17 +210,10 @@ jwt.expiration=86400000
 
 ---
 
-## ▶️ Run Application
-
-### Build Project
+## ▶️ Run Backend
 
 ```bash
-mvn clean install
-```
-
-### Start Application
-
-```bash
+cd backend
 ./mvnw spring-boot:run
 ```
 
@@ -335,6 +221,41 @@ Backend URL:
 
 ```text
 http://localhost:8081
+```
+
+---
+
+## 💻 Run Frontend
+
+```bash
+cd frontend
+
+npm install
+
+npm run dev
+```
+
+Frontend URL:
+
+```text
+http://localhost:5173
+```
+
+---
+
+## 🗄️ Database Tables
+
+```text
+users
+conversations
+messages
+uploaded_files
+```
+
+Hibernate configuration:
+
+```properties
+spring.jpa.hibernate.ddl-auto=update
 ```
 
 ---
@@ -348,22 +269,25 @@ http://localhost:8081
 * Multi-user Support
 * Conversation CRUD
 * Message Persistence
+* File Upload Support
 * OpenAI Integration
 * Gemini Integration
-* File Upload Support
-* Like / Dislike Messages
 * Persistent Chat History
-* MySQL Integration
+* Rename Conversation
+* Delete Conversation
+* Like / Dislike Messages
+* Markdown Rendering
+* Syntax Highlighting
+* Theme Toggle
+* Toast Notifications
+* Search Conversations
+* Responsive UI
 
 ### 🚧 Planned
 
 * Streaming Responses
 * Drag & Drop File Upload
 * Image Upload Support
-* RAG Implementation
-* Vector Database Integration (Chroma / pgvector)
-* Docker Deployment
-* Role-based Access Control
 
 ---
 

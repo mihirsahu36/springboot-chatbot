@@ -226,7 +226,7 @@ mvn clean install
 ### Start Application
 
 ```bash
-mvn spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
 
 Backend URL:

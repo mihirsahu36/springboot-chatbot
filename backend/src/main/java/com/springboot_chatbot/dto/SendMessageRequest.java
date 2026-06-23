@@ -1,6 +1,7 @@
 package com.springboot_chatbot.dto;
 
 public record SendMessageRequest(
-        String prompt
+        String prompt,
+        String provider
 ) {
 }

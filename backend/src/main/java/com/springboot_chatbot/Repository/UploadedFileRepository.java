@@ -11,4 +11,6 @@ public interface UploadedFileRepository
 
     List<UploadedFile>
     findByConversationId(Long conversationId);
+
+    void deleteByConversation_Id(Long conversationId);
 }

@@ -1,12 +1,9 @@
-import { motion }
-from "framer-motion";
-
 export default function TypingIndicator() {
   return (
-    <div className="typing">
-      <span>●</span>
-      <span>●</span>
-      <span>●</span>
+    <div className="typing-container">
+      <div className="typing-dot"></div>
+      <div className="typing-dot"></div>
+      <div className="typing-dot"></div>
     </div>
   );
 }

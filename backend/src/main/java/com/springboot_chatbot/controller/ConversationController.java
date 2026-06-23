@@ -52,11 +52,10 @@ public class ConversationController {
             @RequestBody
             SendMessageRequest request) {
 
-        return chatBotService
-                .getChatResponse(
-                        id,
-                        request.prompt()
-                );
+        return chatBotService.getChatResponse(
+            id,
+            request.prompt(),
+            request.provider());
     }
 
     @GetMapping("/{id}/messages")

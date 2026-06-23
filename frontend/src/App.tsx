@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import ChatWindow from "./components/ChatWindow";
 import ChatInput from "./components/ChatInput";
 import toast from "react-hot-toast";
+import LoginPage from "./pages/LoginPage";
 
 import {
   getConversations,
@@ -45,8 +46,28 @@ function App() {
   const [loading, setLoading] =
     useState(false);
 
+  const [provider, setProvider] =
+    useState(
+      localStorage.getItem("provider")
+      || "openai"
+    );
+
+    const [authenticated,
+    setAuthenticated] =
+    useState(
+      !!localStorage.getItem(
+        "token"
+      )
+    );
+
   useEffect(() => {
-    loadConversations();
+    const token =
+      localStorage.getItem("token");
+
+    if (token) {
+      loadConversations();
+    }
+
   }, []);
 
   useEffect(() => {
@@ -61,6 +82,14 @@ function App() {
     );
 
   }, [darkMode]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "provider",
+      provider
+    );
+
+  }, [provider]);
 
   function toggleTheme() {
     setDarkMode((prev) => !prev);
@@ -101,53 +130,66 @@ function App() {
     }
   }
 
-  async function handleNewChat() {
-    try {
+  function handleNewChat() {
+    setSelectedConversation(
+      null
+    );
+
+    setMessages([]);
+
+    setFiles([]);
+  }
+
+  async function handleSend(
+  prompt: string
+) {
+  try {
+    setLoading(true);
+
+    let conversationId =
+      selectedConversation;
+
+    // Automatically create a chat
+    if (!conversationId) {
+
       const conversation =
         await createConversation();
 
-      await loadConversations();
+      conversationId =
+        conversation.id;
 
       setSelectedConversation(
         conversation.id
       );
 
-      setMessages([]);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  async function handleSend(
-    prompt: string
-  ) {
-    if (!selectedConversation) {
-      toast.error(
-        "Create a chat first"
-      );
-      return;
+      await loadConversations();
     }
 
-    try {
-      setLoading(true);
-
-      await sendMessage(
-        selectedConversation,
-        prompt
+    await sendMessage(
+        conversationId!,
+        prompt,
+        provider
       );
 
       await loadMessages(
-        selectedConversation
+        conversationId!
       );
 
       await loadConversations();
+
     } catch (error) {
+
       console.error(error);
+
+      toast.error(
+        "Failed to send message"
+      );
+
     } finally {
+
       setLoading(false);
     }
   }
-
   async function handleDeleteConversation(
     id: number
   ) {
@@ -176,6 +218,7 @@ function App() {
           null
         );
         setMessages([]);
+        setFiles([]);
       }
     } catch (error) {
       console.error(error);
@@ -232,23 +275,34 @@ function App() {
       file
     );
 
-    if (!selectedConversation) {
-      alert(
-        "Select a conversation first"
+    let conversationId =
+      selectedConversation;
+
+    if (!conversationId) {
+
+      const conversation =
+        await createConversation();
+
+      conversationId =
+        conversation.id;
+
+      setSelectedConversation(
+        conversation.id
       );
-      return;
+
+      await loadConversations();
     }
 
     try {
 
       await uploadFile(
-        selectedConversation,
+        conversationId!,
         file
       );
 
       const uploadedFiles =
         await getFiles(
-          selectedConversation
+          conversationId!
         );
 
       setFiles(
@@ -305,6 +359,16 @@ function App() {
         "Failed to remove file"
       );
     }
+  }
+
+  if (!authenticated) {
+    return (
+      <LoginPage
+        onLogin={() =>
+          setAuthenticated(true)
+        }
+      />
+    );
   }
 
   return (
@@ -373,10 +437,33 @@ function App() {
           loading={loading}
         />
 
+        <div className="chat-footer">
+        <select
+          className="provider-select"
+          value={provider}
+          onChange={(e) =>
+            setProvider(
+              e.target.value
+            )
+          }
+        >
+
+          <option value="openai">
+            OpenAI
+          </option>
+
+          <option value="gemini">
+            Gemini
+          </option>
+
+        </select>
+
         <ChatInput
           onSend={handleSend}
           onUpload={handleUpload}
         />
+
+      </div>
       </div>
     </div>
   );

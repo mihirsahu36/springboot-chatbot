@@ -36,7 +36,8 @@ export async function getMessages(id: number) {
 
 export async function sendMessage(
   conversationId: number,
-  prompt: string
+  prompt: string,
+  provider: string
 ) {
   const response = await fetch(
     `${API_URL}/${conversationId}/message`,
@@ -47,6 +48,7 @@ export async function sendMessage(
       },
       body: JSON.stringify({
         prompt,
+        provider,
       }),
     }
   );

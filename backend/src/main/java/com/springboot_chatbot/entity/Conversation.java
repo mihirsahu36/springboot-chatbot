@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.FetchType;
+
 @Entity
 @Table(name = "conversations")
 public class Conversation {
@@ -16,6 +20,10 @@ public class Conversation {
 
     private LocalDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @OneToMany(
         mappedBy = "conversation",
         cascade = CascadeType.ALL,
@@ -24,8 +32,23 @@ public class Conversation {
 
     private List<Message> messages;
 
+    @OneToMany(
+        mappedBy = "conversation",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<UploadedFile> uploadedFiles;
+
     public Conversation() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Long getId() {

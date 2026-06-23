@@ -11,76 +11,133 @@ import com.springboot_chatbot.Repository.UploadedFileRepository;
 import com.springboot_chatbot.entity.Conversation;
 import com.springboot_chatbot.entity.UploadedFile;
 
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.springboot_chatbot.Repository.UserRepository;
+import com.springboot_chatbot.entity.User;
+
 @RestController
 @RequestMapping("/api/files")
 @CrossOrigin("*")
 public class FileUploadController {
 
-    private final UploadedFileRepository uploadedFileRepository;
-    private final ConversationRepository conversationRepository;
+        private final UploadedFileRepository uploadedFileRepository;
+        private final ConversationRepository conversationRepository;
+        private final UserRepository userRepository;
 
-    public FileUploadController(
-            UploadedFileRepository uploadedFileRepository,
-            ConversationRepository conversationRepository) {
+        public FileUploadController(
+                        UploadedFileRepository uploadedFileRepository,
+                        ConversationRepository conversationRepository,
+                        UserRepository userRepository) {
 
-        this.uploadedFileRepository =
-                uploadedFileRepository;
+                this.uploadedFileRepository = uploadedFileRepository;
 
-        this.conversationRepository =
-                conversationRepository;
-    }
+                this.conversationRepository = conversationRepository;
 
-    @PostMapping("/upload/{conversationId}")
-    public String uploadFile(
+                this.userRepository = userRepository;
+        }
 
-            @PathVariable
-            Long conversationId,
+        @PostMapping("/upload/{conversationId}")
+        public String uploadFile(
 
-            @RequestParam("file")
-            MultipartFile file)
+                        @PathVariable Long conversationId,
 
-            throws IOException {
+                        @RequestParam("file") MultipartFile file)
 
-        Conversation conversation =
-                conversationRepository
-                        .findById(conversationId)
-                        .orElseThrow(
-                                () -> new RuntimeException(
-                                        "Conversation not found"));
+                        throws IOException {
 
-        UploadedFile uploadedFile =
-                new UploadedFile();
+                Conversation conversation = conversationRepository
+                                .findById(conversationId)
+                                .orElseThrow(
+                                                () -> new RuntimeException(
+                                                                "Conversation not found"));
 
-        uploadedFile.setFileName(
-                file.getOriginalFilename());
+                if (!conversation.getUser()
+                                .getId()
+                                .equals(
+                                                getCurrentUser().getId())) {
 
-        uploadedFile.setContent(
-                new String(
-                        file.getBytes()));
+                        throw new RuntimeException(
+                                        "Access denied");
+                }
 
-        uploadedFile.setConversation(
-                conversation);
+                UploadedFile uploadedFile = new UploadedFile();
 
-        uploadedFileRepository.save(
-                uploadedFile);
+                uploadedFile.setFileName(
+                                file.getOriginalFilename());
 
-        return "File uploaded successfully";
-    }
+                uploadedFile.setContent(
+                                new String(
+                                                file.getBytes()));
 
-    @GetMapping("/{conversationId}")
-    public List<UploadedFile> getFiles(
-            @PathVariable Long conversationId) {
+                uploadedFile.setConversation(
+                                conversation);
 
-        return uploadedFileRepository
-                .findByConversationId(
-                        conversationId);
-    }
+                uploadedFileRepository.save(
+                                uploadedFile);
 
-    @DeleteMapping("/{fileId}")
-    public void deleteFile(
-            @PathVariable Long fileId) {
+                return "File uploaded successfully";
+        }
 
-        uploadedFileRepository.deleteById(
-                fileId);
-    }
+        @GetMapping("/{conversationId}")
+        public List<UploadedFile> getFiles(
+                        @PathVariable Long conversationId) {
+
+                Conversation conversation = conversationRepository
+                                .findById(conversationId)
+                                .orElseThrow(
+                                                () -> new RuntimeException(
+                                                                "Conversation not found"));
+
+                if (!conversation.getUser()
+                                .getId()
+                                .equals(
+                                                getCurrentUser().getId())) {
+
+                        throw new RuntimeException(
+                                        "Access denied");
+                }
+
+                return uploadedFileRepository
+                                .findByConversationId(
+                                                conversationId);
+        }
+
+        @DeleteMapping("/{fileId}")
+        public void deleteFile(
+                        @PathVariable Long fileId) {
+
+                UploadedFile file = uploadedFileRepository
+                                .findById(fileId)
+                                .orElseThrow(
+                                                () -> new RuntimeException(
+                                                                "File not found"));
+
+                if (!file.getConversation()
+                                .getUser()
+                                .getId()
+                                .equals(
+                                                getCurrentUser().getId())) {
+
+                        throw new RuntimeException(
+                                        "Access denied");
+                }
+
+                uploadedFileRepository.delete(
+                                file);
+        }
+
+        private User getCurrentUser() {
+
+                String email = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName();
+
+                return userRepository
+                                .findByEmail(email)
+                                .orElseThrow(
+                                                () -> new RuntimeException(
+                                                                "User not found"));
+        }
 }

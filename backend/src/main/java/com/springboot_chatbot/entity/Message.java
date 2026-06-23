@@ -19,7 +19,8 @@ public class Message {
 
     private String role;
 
-    @Column(length = 5000)
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String content;
 
     private LocalDateTime timestamp;

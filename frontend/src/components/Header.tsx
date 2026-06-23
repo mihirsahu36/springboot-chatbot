@@ -12,6 +12,15 @@ export default function Header({
   darkMode,
   toggleTheme,
 }: HeaderProps) {
+
+  function handleLogout() {
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+
+    window.location.reload();
+  }
+  
   return (
     <div className="header">
       <div className="header-left">
@@ -25,8 +34,17 @@ export default function Header({
           toggleTheme={toggleTheme}
         />
 
+        <button
+          className="logout-btn"
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+
         <div className="avatar user-avatar">
-          M
+          {localStorage.getItem("username")
+            ?.charAt(0)
+            .toUpperCase()}
         </div>
       </div>
     </div>

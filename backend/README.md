@@ -4,9 +4,9 @@ A full-stack ChatGPT-style AI chatbot application built with **Spring Boot**, **
 
 ---
 
-## 🚀 Tech Stack
+# 🚀 Tech Stack
 
-### Backend
+## Backend
 
 * Spring Boot
 * Spring Security
@@ -15,9 +15,11 @@ A full-stack ChatGPT-style AI chatbot application built with **Spring Boot**, **
 * MySQL
 * OpenAI API
 * Google Gemini API
+* Apache PDFBox
+* Apache POI
 * Maven
 
-### Frontend
+## Frontend
 
 * React
 * TypeScript
@@ -27,13 +29,13 @@ A full-stack ChatGPT-style AI chatbot application built with **Spring Boot**, **
 * React Syntax Highlighter
 * React Icons
 * React Hot Toast
-* Axios
+* Fetch API
 
 ---
 
-## ✨ Features
+# ✨ Features
 
-### 💬 Chat Features
+## 💬 Chat Features
 
 * Create New Chat
 * Persistent Chat History
@@ -41,30 +43,46 @@ A full-stack ChatGPT-style AI chatbot application built with **Spring Boot**, **
 * Rename Conversation
 * Delete Conversation
 * Automatic Conversation Title Generation
+* Search Conversations
 * Auto Scroll to Latest Message
+* Streaming Responses (SSE)
 * Loading Indicator
 * Copy Response Button
 * Like / Dislike Messages
 * AI Provider Selection (OpenAI / Gemini)
 
-### 📁 File Features
+---
 
-* Upload Files
+## 📁 File Features
+
+* Single File Upload
+* Multiple File Upload
+* Drag & Drop File Upload
+* File Size Validation
+* PDF Upload Support
+* DOCX Upload Support
 * Persist Uploaded Files in MySQL
 * View Uploaded Files per Conversation
 * Delete Uploaded Files
 * Uploaded Files Used as Chat Context
+* PDF Text Extraction
+* DOCX Text Extraction
 
-### 🔐 Authentication Features
+---
+
+## 🔐 Authentication Features
 
 * User Registration
 * User Login
 * JWT Authentication
-* Secure APIs
+* Secure REST APIs
 * Multi-user Support
 * User-specific Conversations
+* User-specific File Access
 
-### 🎨 UI Features
+---
+
+## 🎨 UI Features
 
 * Modern ChatGPT-style Interface
 * Dark Mode
@@ -73,16 +91,23 @@ A full-stack ChatGPT-style AI chatbot application built with **Spring Boot**, **
 * Glassmorphism Effects
 * Sidebar Search
 * User and Assistant Avatars
+* Login & Signup Screens
+* Auto Growing Text Area
+* Drag & Drop Overlay
 * Toast Notifications
 
-### 📝 Message Rendering
+---
+
+## 📝 Message Rendering
 
 * Markdown Support
 * Syntax Highlighting
 * Code Block Rendering
 * Inline Code Styling
 
-### 🗄️ Data Persistence
+---
+
+## 🗄️ Data Persistence
 
 * Conversations stored in MySQL
 * Messages stored in MySQL
@@ -91,9 +116,9 @@ A full-stack ChatGPT-style AI chatbot application built with **Spring Boot**, **
 
 ---
 
-## 📁 Project Structure
+# 📁 Project Structure
 
-```text
+```text id="pn6tbw"
 springboot-chatbot
 │
 ├── backend
@@ -119,6 +144,10 @@ springboot-chatbot
 │   │   ├── Conversation.java
 │   │   ├── Message.java
 │   │   └── UploadedFile.java
+│   │
+│   ├── config
+│   │   ├── SecurityConfig.java
+│   │   └── JwtAuthenticationFilter.java
 │   │
 │   └── dto
 │
@@ -154,29 +183,30 @@ springboot-chatbot
 
 ---
 
-## 🔗 Backend APIs
+# 🔗 Backend APIs
 
-### Authentication APIs
+## Authentication APIs
 
-```http
+```http id="g7g8r0"
 POST /api/auth/register
 POST /api/auth/login
 ```
 
-### Conversation APIs
+## Conversation APIs
 
-```http
+```http id="73m6lw"
 POST   /api/conversations
 GET    /api/conversations
 GET    /api/conversations/{id}/messages
 POST   /api/conversations/{id}/message
+POST   /api/conversations/{id}/stream
 PUT    /api/conversations/{id}
 DELETE /api/conversations/{id}
 ```
 
-### File APIs
+## File APIs
 
-```http
+```http id="0vtrr0"
 POST   /api/files/upload/{conversationId}
 GET    /api/files/{conversationId}
 DELETE /api/files/{fileId}
@@ -184,11 +214,11 @@ DELETE /api/files/{fileId}
 
 ---
 
-## ⚙️ Configuration
+# ⚙️ Configuration
 
-### Backend `application.properties`
+## Backend `application.properties`
 
-```properties
+```properties id="4wq0mq"
 server.port=8081
 
 spring.datasource.url=jdbc:mysql://localhost:3306/chatbot
@@ -199,7 +229,7 @@ spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 
 openai.api.key=${OPENAI_API_KEY}
-openapi.api.model=gpt-4o-mini
+openai.api.model=gpt-4o-mini
 
 gemini.api.key=${GEMINI_API_KEY}
 gemini.api.model=gemini-2.5-flash
@@ -210,24 +240,24 @@ jwt.expiration=86400000
 
 ---
 
-## ▶️ Run Backend
+# ▶️ Run Backend
 
-```bash
+```bash id="4td8y0"
 cd backend
 ./mvnw spring-boot:run
 ```
 
 Backend URL:
 
-```text
+```text id="u4n89t"
 http://localhost:8081
 ```
 
 ---
 
-## 💻 Run Frontend
+# 💻 Run Frontend
 
-```bash
+```bash id="e0w5rv"
 cd frontend
 
 npm install
@@ -237,15 +267,15 @@ npm run dev
 
 Frontend URL:
 
-```text
+```text id="83nk0j"
 http://localhost:5173
 ```
 
 ---
 
-## 🗄️ Database Tables
+# 🗄️ Database Tables
 
-```text
+```text id="a7cjlwm"
 users
 conversations
 messages
@@ -254,44 +284,57 @@ uploaded_files
 
 Hibernate configuration:
 
-```properties
+```properties id="gh9gx8"
 spring.jpa.hibernate.ddl-auto=update
 ```
 
 ---
 
-## 📌 Current Status
+# 📌 Current Status
 
-### ✅ Completed
+## ✅ Completed
 
 * JWT Authentication
 * User Registration/Login
 * Multi-user Support
 * Conversation CRUD
 * Message Persistence
-* File Upload Support
+* Persistent Chat History
 * OpenAI Integration
 * Gemini Integration
-* Persistent Chat History
+* Streaming Responses
+* File Upload Support
+* Multiple File Upload
+* Drag & Drop Upload
+* File Size Validation
+* PDF Upload Support
+* DOCX Upload Support
 * Rename Conversation
 * Delete Conversation
 * Like / Dislike Messages
 * Markdown Rendering
 * Syntax Highlighting
 * Theme Toggle
-* Toast Notifications
+* Auto Growing Text Area
 * Search Conversations
+* Toast Notifications
 * Responsive UI
-
-### 🚧 Planned
-
-* Streaming Responses
-* Drag & Drop File Upload
-* Image Upload Support
 
 ---
 
-## 👨‍💻 Author
+## 🚧 Planned
+
+* Web Search Integration
+* Image Upload Support
+* RAG Implementation
+* Vector Database Integration
+* Docker Deployment
+* Role-based Access Control
+* Export Chat as PDF
+
+---
+
+# 👨‍💻 Author
 
 **Mihir Sahu**
 

@@ -1,6 +1,6 @@
 # Spring Boot Chatbot
 
-A full-stack AI chatbot application built using Spring Boot, React, TypeScript, MySQL, OpenAI, and Google Gemini APIs.
+A full-stack AI chatbot application built using **Spring Boot**, **React**, **TypeScript**, **MySQL**, **OpenAI**, and **Google Gemini APIs**.
 
 ## 🏗️ Architecture
 
@@ -43,42 +43,54 @@ springboot-chatbot
 
 ---
 
-## 🚀 Features
+# 🚀 Features
 
-### Backend
+## Backend
 
 * Spring Boot REST API
-* Spring Security
-* JWT Authentication
+* Spring Security + JWT Authentication
+* User Registration & Login
+* Multi-user Support
 * OpenAI Integration
 * Google Gemini Integration
+* Server Sent Events (SSE) Streaming
 * MySQL Database Integration
 * JPA/Hibernate Persistence
 * Conversation Management
 * Message Persistence
 * File Upload Support
-* Multi-user Support
+* PDF Text Extraction
+* DOCX Text Extraction
+* Conversation Ownership Validation
 * Rename Conversation API
 * Delete Conversation API
 * Like / Dislike Message API
 * CORS Configuration
 * Maven Build System
 
-### Frontend
+---
+
+## Frontend
 
 * React + TypeScript
 * Modern ChatGPT-style UI
-* Login Page
+* Authentication UI (Login / Signup)
 * Conversation Sidebar
 * Create New Chat
 * Rename Conversation
 * Delete Conversation
 * Conversation Search
+* AI Provider Selection
+* OpenAI / Gemini Switch
+* Streaming Responses
 * Markdown Rendering
 * Syntax Highlighting
 * Copy Response Button
-* AI Provider Selection
-* File Upload Support
+* Drag & Drop File Upload
+* Multiple File Upload
+* File Size Validation
+* File Delete Support
+* Auto Growing Text Area
 * Toast Notifications
 * Loading State
 * Auto Scroll
@@ -87,27 +99,39 @@ springboot-chatbot
 
 ---
 
-## 🔗 Backend APIs
-
-### Authentication APIs
+# 🔐 Authentication APIs
 
 ```http
 POST /api/auth/register
 POST /api/auth/login
 ```
 
-### Conversation APIs
+---
+
+# 💬 Conversation APIs
 
 ```http
 POST   /api/conversations
 GET    /api/conversations
 GET    /api/conversations/{id}/messages
 POST   /api/conversations/{id}/message
+POST   /api/conversations/{id}/stream
 PUT    /api/conversations/{id}
 DELETE /api/conversations/{id}
 ```
 
-### File APIs
+---
+
+# 👍 Message APIs
+
+```http
+POST /api/conversations/messages/{id}/like
+POST /api/conversations/messages/{id}/dislike
+```
+
+---
+
+# 📁 File APIs
 
 ```http
 POST   /api/files/upload/{conversationId}
@@ -117,7 +141,7 @@ DELETE /api/files/{fileId}
 
 ---
 
-## 🗄️ Database
+# 🗄️ Database
 
 Tables:
 
@@ -131,36 +155,52 @@ uploaded_files
 Features:
 
 * Persistent Chat History
+* User Management
 * Conversation Storage
 * Message Storage
-* User Management
-* File Storage
+* Uploaded File Storage
 * Automatic Schema Updates
 
 ---
 
-## ⚙️ Configuration
+# ⚙️ Configuration
 
-### Required Environment Variables
+## Required Environment Variables
 
 ```properties
+# OpenAI
 openai.api.key=YOUR_OPENAI_API_KEY
 
+# Google Gemini
 gemini.api.key=YOUR_GEMINI_API_KEY
 
+# JWT
 jwt.secret=YOUR_SECRET_KEY
-
 jwt.expiration=86400000
+
+# Database
+spring.datasource.url=jdbc:mysql://localhost:3306/chatbot_db
+spring.datasource.username=root
+spring.datasource.password=password
 ```
 
 ---
 
-## ⚙️ Getting Started
+# ⚙️ Getting Started
 
-### Start Backend
+## Clone Repository
+
+```bash
+git clone https://github.com/mihirsahu36/springboot-chatbot.git
+```
+
+---
+
+## Start Backend
 
 ```bash
 cd backend
+
 ./mvnw spring-boot:run
 ```
 
@@ -172,7 +212,7 @@ http://localhost:8081
 
 ---
 
-### Start Frontend
+## Start Frontend
 
 ```bash
 cd frontend
@@ -190,7 +230,7 @@ http://localhost:5173
 
 ---
 
-## 🤖 Supported AI Providers
+# 🤖 Supported AI Providers
 
 | Provider                | Status |
 | ----------------------- | ------ |
@@ -199,9 +239,9 @@ http://localhost:5173
 
 ---
 
-## 📌 Current Status
+# 📌 Current Status
 
-### ✅ Completed
+## ✅ Completed
 
 * JWT Authentication
 * User Registration/Login
@@ -209,47 +249,56 @@ http://localhost:5173
 * Conversation Management
 * Message Persistence
 * MySQL Integration
-* Rename Conversation
-* Delete Conversation
 * OpenAI Integration
 * Gemini Integration
-* File Upload Support
+* Streaming Responses
+* PDF Upload Support
+* DOCX Upload Support
+* Multiple File Upload
+* Drag & Drop Upload
+* File Size Validation
+* Rename Conversation
+* Delete Conversation
 * Markdown Rendering
 * Syntax Highlighting
 * Theme Toggle
 * Auto Scroll
-* Loading Indicator
+* Auto Growing Text Area
 * Conversation Search
 * Like / Dislike Messages
 * Toast Notifications
 * Responsive UI
 
-### 🚧 Planned
+---
 
-* File Content Context for AI Responses
-* PDF Text Extraction
-* Streaming Responses
-* Export Chat as PDF
-* Drag & Drop File Upload
+## 🚧 Planned Features
+
+* Web Search Integration
 * Image Upload Support
+* Export Chat as PDF
+* Export Chat as Markdown
+* Chat Sharing
+* Voice Input
+* Voice Responses
+* User Profile Management
 
 ---
 
-## 🎨 Current UI
+# 🎨 UI Features
 
 * Modern ChatGPT-inspired Design
 * Glassmorphism Sidebar
 * Conversation History Panel
-* User and Assistant Avatars
-* Login Screen
+* User & Assistant Avatars
 * Dark Theme Support
 * Responsive Layout
+* Login / Signup Screens
 * Markdown & Code Rendering
 * File Upload Interface
 
 ---
 
-## 👨‍💻 Author
+# 👨‍💻 Author
 
 **Mihir Sahu**
 

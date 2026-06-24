@@ -271,22 +271,8 @@ http://localhost:5173
 
 ---
 
-## 🚧 Planned Features
-
-* Web Search Integration
-* Image Upload Support
-* Export Chat as PDF
-* Export Chat as Markdown
-* Chat Sharing
-* Voice Input
-* Voice Responses
-* User Profile Management
-
----
-
 # 🎨 UI Features
 
-* Modern ChatGPT-inspired Design
 * Glassmorphism Sidebar
 * Conversation History Panel
 * User & Assistant Avatars

@@ -322,18 +322,6 @@ spring.jpa.hibernate.ddl-auto=update
 
 ---
 
-## 🚧 Planned
-
-* Web Search Integration
-* Image Upload Support
-* RAG Implementation
-* Vector Database Integration
-* Docker Deployment
-* Role-based Access Control
-* Export Chat as PDF
-
----
-
 # 👨‍💻 Author
 
 **Mihir Sahu**

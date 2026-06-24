@@ -339,19 +339,6 @@ spring.datasource.password=your_password
 
 ---
 
-## 🚧 Planned
-
-* Web Search Integration
-* Image Upload Support
-* RAG with Vector Database
-* Export Chat as PDF
-* Docker Deployment
-* Role-based Access Control
-* Voice Input
-* Chat Sharing
-
----
-
 # 👨‍💻 Author
 
 **Mihir Sahu**

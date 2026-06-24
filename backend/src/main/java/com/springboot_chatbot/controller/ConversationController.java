@@ -18,6 +18,9 @@ import org.springframework.http.ResponseEntity;
 
 import com.springboot_chatbot.dto.RenameConversationRequest;
 
+import org.springframework.http.MediaType;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 @RestController
 @RequestMapping("/api/conversations")
 public class ConversationController {
@@ -49,13 +52,12 @@ public class ConversationController {
     public String sendMessage(
             @PathVariable Long id,
 
-            @RequestBody
-            SendMessageRequest request) {
+            @RequestBody SendMessageRequest request) {
 
         return chatBotService.getChatResponse(
-            id,
-            request.prompt(),
-            request.provider());
+                id,
+                request.prompt(),
+                request.provider());
     }
 
     @GetMapping("/{id}/messages")
@@ -66,20 +68,19 @@ public class ConversationController {
     }
 
     @DeleteMapping("/{id}")
-        public ResponseEntity<Void> deleteConversation(
-                @PathVariable Long id) {
+    public ResponseEntity<Void> deleteConversation(
+            @PathVariable Long id) {
 
-            service.deleteConversation(id);
+        service.deleteConversation(id);
 
-            return ResponseEntity.noContent().build();
-        }
+        return ResponseEntity.noContent().build();
+    }
 
     @PutMapping("/{id}")
     public Conversation renameConversation(
             @PathVariable Long id,
 
-            @RequestBody
-            RenameConversationRequest request) {
+            @RequestBody RenameConversationRequest request) {
 
         return service.renameConversation(
                 id,
@@ -98,5 +99,18 @@ public class ConversationController {
             @PathVariable Long id) {
 
         chatBotService.dislikeMessage(id);
+    }
+
+    @PostMapping(value = "/{id}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamMessage(
+            @PathVariable Long id,
+
+            @RequestBody SendMessageRequest request) {
+
+        return chatBotService
+                .streamChatResponse(
+                        id,
+                        request.prompt(),
+                        request.provider());
     }
 }

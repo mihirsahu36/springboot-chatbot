@@ -1,6 +1,7 @@
 package com.springboot_chatbot.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class UploadedFile {
@@ -17,6 +18,7 @@ public class UploadedFile {
 
     @ManyToOne
     @JoinColumn(name = "conversation_id")
+    @JsonIgnore
     private Conversation conversation;
 
     public Long getId() {

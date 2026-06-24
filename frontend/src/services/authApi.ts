@@ -27,14 +27,29 @@ export async function register(
 ) {
 
   const response =
-    await axios.post(
-      `${API}/register`,
+    await fetch(
+      "http://localhost:8081/api/auth/register",
       {
-        username,
-        email,
-        password
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+        }),
       }
     );
 
-  return response.data;
+  if (!response.ok) {
+    throw new Error(
+      "Registration failed"
+    );
+  }
+
+  return response.text();
 }

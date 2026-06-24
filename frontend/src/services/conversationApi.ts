@@ -1,7 +1,17 @@
 const API_URL = "http://localhost:8081/api/conversations";
 
+function getAuthHeaders() {
+  const token = localStorage.getItem("token");
+
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 export async function getConversations() {
-  const response = await fetch(API_URL);
+  const response = await fetch(API_URL, {
+    headers: getAuthHeaders(),
+  });
 
   if (!response.ok) {
     throw new Error("Failed to load conversations");
@@ -13,6 +23,7 @@ export async function getConversations() {
 export async function createConversation() {
   const response = await fetch(API_URL, {
     method: "POST",
+    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
@@ -24,7 +35,10 @@ export async function createConversation() {
 
 export async function getMessages(id: number) {
   const response = await fetch(
-    `${API_URL}/${id}/messages`
+    `${API_URL}/${id}/messages`,
+    {
+      headers: getAuthHeaders(),
+    }
   );
 
   if (!response.ok) {
@@ -45,6 +59,7 @@ export async function sendMessage(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...getAuthHeaders(),
       },
       body: JSON.stringify({
         prompt,
@@ -63,6 +78,7 @@ export async function deleteConversation(
     `${API_URL}/${id}`,
     {
       method: "DELETE",
+      headers: getAuthHeaders(),
     }
   );
 
@@ -84,6 +100,7 @@ export async function renameConversation(
       headers: {
         "Content-Type":
           "application/json",
+          ...getAuthHeaders(),
       },
       body: JSON.stringify({
         title,
@@ -131,14 +148,14 @@ export async function uploadFile(
     file
   );
 
-  const response =
-    await fetch(
-      url,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
+  const response = await fetch(
+    url,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: formData,
+    }
+  );
 
   if (!response.ok) {
     throw new Error(
@@ -152,11 +169,12 @@ export async function uploadFile(
 export async function getFiles(
   conversationId: number
 ) {
-  const response =
-    await fetch(
-      `http://localhost:8081/api/files/${conversationId}`
-    );
-
+  const response = await fetch(
+    `http://localhost:8081/api/files/${conversationId}`,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
   if (!response.ok) {
     throw new Error(
       "Failed to load files"
@@ -170,17 +188,71 @@ export async function deleteFile(
   fileId: number
 ) {
 
-  const response =
-    await fetch(
-      `http://localhost:8081/api/files/${fileId}`,
-      {
-        method: "DELETE",
-      }
-    );
+  const response = await fetch(
+    `http://localhost:8081/api/files/${fileId}`,
+    {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    }
+  );
 
   if (!response.ok) {
     throw new Error(
       "Failed to delete file"
     );
+  }
+}
+
+export async function streamMessage(
+  conversationId: number,
+  prompt: string,
+  provider: string,
+  onChunk: (chunk: string) => void
+) {
+
+  const token =
+    localStorage.getItem("token");
+
+  const response = await fetch(
+    `http://localhost:8081/api/conversations/${conversationId}/stream`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        prompt,
+        provider,
+      }),
+    }
+  );
+
+  const reader =
+    response.body?.getReader();
+
+  if (!reader) return;
+
+  const decoder =
+    new TextDecoder();
+
+  while (true) {
+
+    const { done, value } =
+      await reader.read();
+
+    if (done) break;
+
+    const chunk =
+      decoder.decode(value);
+
+    const cleanedChunk =
+      chunk
+        .replace(/data:/g, "")
+        .replace(/\n\n/g, "")
+        .replace(/\r/g, "")
+        .replace(/\n/g, "");
+
+    onChunk(cleanedChunk);
   }
 }

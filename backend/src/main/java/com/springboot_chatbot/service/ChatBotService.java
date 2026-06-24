@@ -19,9 +19,19 @@ import com.springboot_chatbot.dto.GeminiRequest;
 import com.springboot_chatbot.dto.GeminiResponse;
 
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 
 import com.springboot_chatbot.Repository.UserRepository;
 import com.springboot_chatbot.entity.User;
+
+import com.springboot_chatbot.entity.UploadedFile;
+import com.springboot_chatbot.Repository.UploadedFileRepository;
+
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import java.util.concurrent.CompletableFuture;
+
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 public class ChatBotService {
@@ -34,18 +44,20 @@ public class ChatBotService {
 
         private final UserRepository userRepository;
 
+        private final UploadedFileRepository uploadedFileRepository;
+
         public ChatBotService(
                         RestClient restClient,
                         ConversationRepository conversationRepository,
                         MessageRepository messageRepository,
-                        UserRepository userRepository) {
+                        UserRepository userRepository,
+                        UploadedFileRepository uploadedFileRepository) {
 
                 this.restClient = restClient;
                 this.conversationRepository = conversationRepository;
-
                 this.messageRepository = messageRepository;
-
                 this.userRepository = userRepository;
+                this.uploadedFileRepository = uploadedFileRepository;
         }
 
         @Value("${openai.api.key}")
@@ -259,16 +271,19 @@ public class ChatBotService {
                         String prompt,
                         String provider) {
 
-                if ("gemini".equalsIgnoreCase(provider)) {
+                String finalPrompt = buildPromptWithFileContext(
+                                conversationId,
+                                prompt);
 
+                if ("gemini".equalsIgnoreCase(provider)) {
                         return getGeminiResponse(
                                         conversationId,
-                                        prompt);
+                                        finalPrompt);
                 }
 
                 return getOpenAiResponse(
                                 conversationId,
-                                prompt);
+                                finalPrompt);
         }
 
         private String getGeminiResponse(
@@ -390,5 +405,109 @@ public class ChatBotService {
                 message.setDisliked(true);
 
                 messageRepository.save(message);
+        }
+
+        private String buildPromptWithFileContext(
+                        Long conversationId,
+                        String userPrompt) {
+
+                List<UploadedFile> files = uploadedFileRepository.findByConversationId(conversationId);
+
+                // If no files uploaded, use original prompt
+                if (files.isEmpty()) {
+                        return userPrompt;
+                }
+
+                StringBuilder finalPrompt = new StringBuilder();
+
+                finalPrompt.append("""
+                                Use the uploaded files below as context when answering the user's question.
+                                If the answer is not found in the files, answer normally.
+
+                                Uploaded Files:
+                                """);
+
+                for (UploadedFile file : files) {
+
+                        finalPrompt.append("\n---------------------------------\n");
+                        finalPrompt.append("File Name: ")
+                                        .append(file.getFileName())
+                                        .append("\n\n");
+
+                        finalPrompt.append(file.getContent())
+                                        .append("\n");
+                }
+
+                finalPrompt.append("\n---------------------------------\n");
+                finalPrompt.append("User Question:\n");
+                finalPrompt.append(userPrompt);
+
+                return finalPrompt.toString();
+        }
+
+        public SseEmitter streamChatResponse(
+                        Long conversationId,
+                        String prompt,
+                        String provider) {
+
+                Authentication authentication = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication();
+
+                SseEmitter emitter = new SseEmitter(300000L);
+
+                CompletableFuture.runAsync(() -> {
+
+                        SecurityContext context = SecurityContextHolder
+                                        .createEmptyContext();
+
+                        context.setAuthentication(
+                                        authentication);
+
+                        SecurityContextHolder
+                                        .setContext(context);
+
+                        try {
+                                String response = getChatResponse(
+                                                conversationId,
+                                                prompt,
+                                                provider);
+
+                                for (int i = 0; i < response.length(); i++) {
+
+                                        emitter.send(
+                                                        SseEmitter.event()
+                                                                        .data(
+                                                                                        response.substring(
+                                                                                                        i,
+                                                                                                        i + 1)));
+
+                                        Thread.sleep(20);
+                                }
+
+                                emitter.complete();
+
+                        } catch (Exception e) {
+
+                                e.printStackTrace();
+
+                                try {
+                                        emitter.send(
+                                                        SseEmitter.event()
+                                                                        .name("error")
+                                                                        .data(
+                                                                                        e.getMessage()));
+                                } catch (Exception ignored) {
+                                }
+
+                                emitter.completeWithError(e);
+
+                        } finally {
+
+                                SecurityContextHolder.clearContext();
+                        }
+                });
+
+                return emitter;
         }
 }

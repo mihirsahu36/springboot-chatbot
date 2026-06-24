@@ -17,6 +17,7 @@ import {
   uploadFile,
   getFiles,
   deleteFile,
+  streamMessage,
 } from "./services/conversationApi";
 
 import type { Conversation } from "./types/Conversation";
@@ -26,70 +27,67 @@ import "./App.css";
 
 function App() {
   const [darkMode, setDarkMode] = useState(
-    () =>
-      localStorage.getItem("theme") !==
-      "light"
+    () => localStorage.getItem("theme") !== "light",
   );
 
-  const [conversations, setConversations] =
-    useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
 
-  const [selectedConversation, setSelectedConversation] =
-    useState<number | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<
+    number | null
+  >(null);
 
-  const [messages, setMessages] =
-    useState<Message[]>([]);
-  
-  const [files, setFiles] =
-    useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
-  const [loading, setLoading] =
-    useState(false);
+  const [files, setFiles] = useState<any[]>([]);
 
-  const [provider, setProvider] =
-    useState(
-      localStorage.getItem("provider")
-      || "openai"
-    );
+  const [loading, setLoading] = useState(false);
 
-    const [authenticated,
-    setAuthenticated] =
-    useState(
-      !!localStorage.getItem(
-        "token"
-      )
-    );
+  const [provider, setProvider] = useState(
+    localStorage.getItem("provider") || "openai",
+  );
+
+  const [authenticated, setAuthenticated] = useState(
+    !!localStorage.getItem("token"),
+  );
 
   useEffect(() => {
-    const token =
-      localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
     if (token) {
       loadConversations();
     }
-
   }, []);
 
   useEffect(() => {
-    document.body.className =
-      darkMode
-        ? ""
-        : "light-mode";
+    document.body.className = darkMode ? "" : "light-mode";
 
-    localStorage.setItem(
-      "theme",
-      darkMode ? "dark" : "light"
-    );
-
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "provider",
-      provider
-    );
-
+    localStorage.setItem("provider", provider);
   }, [provider]);
+
+  useEffect(() => {
+    const preventDefaults = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    window.addEventListener("dragenter", preventDefaults);
+
+    window.addEventListener("dragover", preventDefaults);
+
+    window.addEventListener("drop", preventDefaults);
+
+    return () => {
+      window.removeEventListener("dragenter", preventDefaults);
+
+      window.removeEventListener("dragover", preventDefaults);
+
+      window.removeEventListener("drop", preventDefaults);
+    };
+  }, []);
 
   function toggleTheme() {
     setDarkMode((prev) => !prev);
@@ -104,99 +102,104 @@ function App() {
     }
   }
 
-  async function loadMessages(
-    id: number
-  ) {
+  async function loadMessages(id: number) {
     try {
+      const data = await getMessages(id);
 
-      const data =
-        await getMessages(id);
-
-      const uploadedFiles =
-        await getFiles(id);
+      const uploadedFiles = await getFiles(id);
 
       setMessages(data);
 
-      setFiles(
-        uploadedFiles
-      );
+      setFiles(uploadedFiles);
 
-      setSelectedConversation(
-        id
-      );
-
+      setSelectedConversation(id);
     } catch (error) {
       console.error(error);
     }
   }
 
   function handleNewChat() {
-    setSelectedConversation(
-      null
-    );
+    setSelectedConversation(null);
 
     setMessages([]);
 
     setFiles([]);
   }
 
-  async function handleSend(
-  prompt: string
-) {
-  try {
-    setLoading(true);
+  async function handleSend(prompt: string) {
+    try {
+      setLoading(true);
 
-    let conversationId =
-      selectedConversation;
+      let conversationId = selectedConversation;
 
-    // Automatically create a chat
-    if (!conversationId) {
+      if (!conversationId) {
+        const conversation = await createConversation();
 
-      const conversation =
-        await createConversation();
+        conversationId = conversation.id;
 
-      conversationId =
-        conversation.id;
+        setSelectedConversation(conversation.id);
 
-      setSelectedConversation(
-        conversation.id
-      );
+        await loadConversations();
+      }
 
-      await loadConversations();
-    }
+      // Add user message immediately
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          role: "user",
+          content: prompt,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
 
-    await sendMessage(
+      // Add empty assistant message
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: "assistant",
+          content: "",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+
+      let fullResponse = "";
+
+      await streamMessage(
         conversationId!,
         prompt,
-        provider
-      );
+        provider,
 
-      await loadMessages(
-        conversationId!
+        (chunk) => {
+          fullResponse += chunk;
+
+          setMessages((prev) => {
+            const updated = [...prev];
+
+            updated[updated.length - 1] = {
+              ...updated[updated.length - 1],
+
+              content: fullResponse,
+            };
+
+            return updated;
+          });
+        },
       );
 
       await loadConversations();
-
     } catch (error) {
-
       console.error(error);
 
-      toast.error(
-        "Failed to send message"
-      );
-
+      toast.error("Failed to send message");
     } finally {
-
       setLoading(false);
     }
   }
-  async function handleDeleteConversation(
-    id: number
-  ) {
-    const confirmed =
-      window.confirm(
-        "Delete this conversation?"
-      );
+
+  async function handleDeleteConversation(id: number) {
+    const confirmed = window.confirm("Delete this conversation?");
 
     if (!confirmed) {
       return;
@@ -205,55 +208,33 @@ function App() {
     try {
       await deleteConversation(id);
 
-      toast.success(
-        "Conversation deleted"
-      );
+      toast.success("Conversation deleted");
 
       await loadConversations();
 
-      if (
-        selectedConversation === id
-      ) {
-        setSelectedConversation(
-          null
-        );
+      if (selectedConversation === id) {
+        setSelectedConversation(null);
         setMessages([]);
         setFiles([]);
       }
     } catch (error) {
       console.error(error);
 
-      toast.error(
-        "Failed to delete conversation"
-      );
+      toast.error("Failed to delete conversation");
     }
   }
 
-  async function handleRenameConversation(
-    id: number,
-    currentTitle: string
-  ) {
-    const newTitle = window.prompt(
-      "Enter new title",
-      currentTitle
-    );
+  async function handleRenameConversation(id: number, currentTitle: string) {
+    const newTitle = window.prompt("Enter new title", currentTitle);
 
-    if (
-      !newTitle ||
-      !newTitle.trim()
-    ) {
+    if (!newTitle || !newTitle.trim()) {
       return;
     }
 
     try {
-      await renameConversation(
-        id,
-        newTitle
-      );
+      await renameConversation(id, newTitle);
 
-      toast.success(
-        "Conversation renamed"
-      );
+      toast.success("Conversation renamed");
 
       await loadConversations();
     } catch (error) {
@@ -261,124 +242,80 @@ function App() {
     }
   }
 
-  async function handleUpload(
-  file: File
-  ) {
+  async function handleUpload(uploadedFiles: File[]) {
+    console.log("selectedConversation =", selectedConversation);
 
-    console.log(
-      "selectedConversation =",
-      selectedConversation
-    );
+    console.log("uploadedFiles =", uploadedFiles);
 
-    console.log(
-      "uploaded file =",
-      file
-    );
+    console.log("Token:", localStorage.getItem("token"));
 
-    let conversationId =
-      selectedConversation;
+    let conversationId = selectedConversation;
 
     if (!conversationId) {
+      const conversation = await createConversation();
 
-      const conversation =
-        await createConversation();
+      conversationId = conversation.id;
 
-      conversationId =
-        conversation.id;
-
-      setSelectedConversation(
-        conversation.id
-      );
+      setSelectedConversation(conversation.id);
 
       await loadConversations();
     }
 
     try {
+      let uploadedCount = 0;
 
-      await uploadFile(
-        conversationId!,
-        file
-      );
+      for (const file of uploadedFiles) {
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(`${file.name} exceeds 10MB`);
 
-      const uploadedFiles =
-        await getFiles(
-          conversationId!
-        );
+          continue;
+        }
 
-      setFiles(
-        uploadedFiles
-      );
+        await uploadFile(conversationId!, file);
 
-      toast.success(
-        "File uploaded"
-      );
+        uploadedCount++;
+      }
 
+      const latestFiles = await getFiles(conversationId!);
+
+      console.log("Files from backend:", latestFiles);
+
+      setFiles(latestFiles);
+
+      if (uploadedCount > 0) {
+        toast.success(`${uploadedCount} file(s) uploaded`);
+      }
     } catch (error) {
-
       console.error(error);
 
-      toast.error(
-        "Upload failed"
-      );
+      toast.error("Upload failed");
     }
   }
 
-  async function handleDeleteFile(
-    fileId: number
-  ) {
-
+  async function handleDeleteFile(fileId: number) {
     try {
+      await deleteFile(fileId);
 
-      await deleteFile(
-        fileId
-      );
+      if (selectedConversation) {
+        const uploadedFiles = await getFiles(selectedConversation);
 
-      if (
-        selectedConversation
-      ) {
-
-        const uploadedFiles =
-          await getFiles(
-            selectedConversation
-          );
-
-        setFiles(
-          uploadedFiles
-        );
+        setFiles(uploadedFiles);
       }
 
-      toast.success(
-        "File removed"
-      );
-
+      toast.success("File removed");
     } catch (error) {
-
       console.error(error);
 
-      toast.error(
-        "Failed to remove file"
-      );
+      toast.error("Failed to remove file");
     }
   }
 
   if (!authenticated) {
-    return (
-      <LoginPage
-        onLogin={() =>
-          setAuthenticated(true)
-        }
-      />
-    );
+    return <LoginPage onLogin={() => setAuthenticated(true)} />;
   }
 
   return (
-    <div
-      className={
-        darkMode
-          ? "app dark-theme"
-          : "app light-theme"
-      }
-    >
+    <div className={darkMode ? "app dark-theme" : "app light-theme"}>
       <Sidebar
         conversations={conversations}
         selectedId={selectedConversation}
@@ -392,12 +329,8 @@ function App() {
         <Header
           title={
             selectedConversation
-              ? conversations.find(
-                  c =>
-                    c.id ===
-                    selectedConversation
-                )?.title ??
-                "Conversation"
+              ? (conversations.find((c) => c.id === selectedConversation)
+                  ?.title ?? "Conversation")
               : "Spring AI Chatbot"
           }
           darkMode={darkMode}
@@ -405,65 +338,35 @@ function App() {
         />
 
         <div className="uploaded-files">
-          {files.map(file => (
-
-            <div
-              key={file.id}
-              className="file-chip"
-            >
-
-              <span>
-                📄 {file.fileName}
-              </span>
+          {files.map((file) => (
+            <div key={file.id} className="file-chip">
+              <span>📄 {file.fileName}</span>
 
               <button
                 className="file-delete-btn"
-                onClick={() =>
-                  handleDeleteFile(
-                    file.id
-                  )
-                }
+                onClick={() => handleDeleteFile(file.id)}
               >
                 ✕
               </button>
-
             </div>
           ))}
-
         </div>
 
-        <ChatWindow
-          messages={messages}
-          loading={loading}
-        />
+        <ChatWindow messages={messages} loading={loading} />
 
         <div className="chat-footer">
-        <select
-          className="provider-select"
-          value={provider}
-          onChange={(e) =>
-            setProvider(
-              e.target.value
-            )
-          }
-        >
+          <select
+            className="provider-select"
+            value={provider}
+            onChange={(e) => setProvider(e.target.value)}
+          >
+            <option value="openai">OpenAI</option>
 
-          <option value="openai">
-            OpenAI
-          </option>
+            <option value="gemini">Gemini</option>
+          </select>
 
-          <option value="gemini">
-            Gemini
-          </option>
-
-        </select>
-
-        <ChatInput
-          onSend={handleSend}
-          onUpload={handleUpload}
-        />
-
-      </div>
+          <ChatInput onSend={handleSend} onUpload={handleUpload} />
+        </div>
       </div>
     </div>
   );

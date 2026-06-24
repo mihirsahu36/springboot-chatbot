@@ -16,6 +16,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import com.springboot_chatbot.Repository.UserRepository;
 import com.springboot_chatbot.entity.User;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
+
 @RestController
 @RequestMapping("/api/files")
 @CrossOrigin("*")
@@ -52,6 +58,20 @@ public class FileUploadController {
                                                 () -> new RuntimeException(
                                                                 "Conversation not found"));
 
+                System.out.println(
+                                "Conversation User = " +
+                                                conversation.getUser().getEmail());
+
+                System.out.println(
+                                "Logged In User = " +
+                                                getCurrentUser().getEmail());
+
+                if (file.getSize() > 10 * 1024 * 1024) {
+
+                        throw new RuntimeException(
+                                        "File exceeds 10MB");
+                }
+
                 if (!conversation.getUser()
                                 .getId()
                                 .equals(
@@ -66,9 +86,32 @@ public class FileUploadController {
                 uploadedFile.setFileName(
                                 file.getOriginalFilename());
 
-                uploadedFile.setContent(
-                                new String(
-                                                file.getBytes()));
+                String content;
+
+                String fileName = file.getOriginalFilename()
+                                .toLowerCase();
+
+                if (fileName.endsWith(
+                                ".pdf")) {
+
+                        content = extractTextFromPdf(
+                                        file);
+                }
+
+                else if (fileName.endsWith(
+                                ".docx")) {
+
+                        content = extractTextFromDocx(
+                                        file);
+                }
+
+                else {
+
+                        content = new String(
+                                        file.getBytes());
+                }
+
+                uploadedFile.setContent(content);
 
                 uploadedFile.setConversation(
                                 conversation);
@@ -139,5 +182,42 @@ public class FileUploadController {
                                 .orElseThrow(
                                                 () -> new RuntimeException(
                                                                 "User not found"));
+        }
+
+        private String extractTextFromPdf(
+                        MultipartFile file)
+                        throws IOException {
+
+                try (PDDocument document = Loader.loadPDF(
+                                file.getBytes())) {
+
+                        PDFTextStripper stripper = new PDFTextStripper();
+
+                        return stripper.getText(document);
+                }
+        }
+
+        private String extractTextFromDocx(
+                        MultipartFile file)
+                        throws IOException {
+
+                try (XWPFDocument document = new XWPFDocument(
+                                file.getInputStream())) {
+
+                        XWPFWordExtractor extractor = new XWPFWordExtractor(
+                                        document);
+
+                        return extractor.getText();
+
+                } catch (Exception e) {
+
+                        System.out.println(
+                                        "DOCX parsing failed: "
+                                                        + e.getMessage());
+
+                        return "Unable to extract text from this DOCX file. "
+                                        + "Please save the document as a standard DOCX "
+                                        + "using Microsoft Word and upload again.";
+                }
         }
 }
